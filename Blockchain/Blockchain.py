@@ -1,6 +1,8 @@
 from typing import List
 from .Block import Block
 import hashlib
+from Crypto.PublicKey import RSA
+import multiprocessing
 
 
 class Blockchain():
@@ -10,6 +12,22 @@ class Blockchain():
     @property
     def blocks(self) -> List[Block]:
         return self.__blocks
+
+    @staticmethod
+    def generateKeys():
+        key = RSA.generate(2048)
+        private_key = key.exportKey()
+        public_key = key.publickey().exportKey()
+
+        public_key_file = open("public_key.pem", 'wb')
+        public_key_file.write(public_key)
+        public_key_file.close()
+
+        private_key_file = open("private.pem", 'wb')
+        private_key_file.write(private_key)
+        private_key_file.close()
+
+        return (public_key, private_key)
 
     def add_block(self, block: Block):
         if len(self.blocks) and not block.prev_hash:
