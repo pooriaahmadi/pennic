@@ -19,7 +19,7 @@ class Blockchain():
         private_key = key.exportKey()
         public_key = key.publickey().exportKey()
 
-        public_key_file = open("public_key.pem", 'wb')
+        public_key_file = open("public.pem", 'wb')
         public_key_file.write(public_key)
         public_key_file.close()
 
