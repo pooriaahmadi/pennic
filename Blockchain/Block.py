@@ -1,3 +1,4 @@
+from __future__ import annotations
 from hashlib import sha256
 import multiprocessing
 
@@ -10,7 +11,6 @@ class Block():
         self.hardness = hardness
         self.nonse = nonse
         self.trasactions = transactions
-        self.calculate_correct_hash_multiprocess()
 
     @property
     def hash(self) -> str:
@@ -45,11 +45,11 @@ class Block():
         if hash.startswith('0' * self.hardness):
             return [hash, nonse]
 
-    def calculate_correct_hash_multiprocess(self) -> str:
+    def calculate_correct_hash_multiprocess(self, hashes_per_cycle=8000) -> Block:
         pool = multiprocessing.Pool(multiprocessing.cpu_count())
         is_done = False
         start = 0
-        end = increase_value = 8000
+        end = hashes_per_cycle
 
         while not is_done:
             results = pool.map(self.pool_hashing, range(start, end))
@@ -61,6 +61,6 @@ class Block():
                 is_done = True
                 break
             start = end
-            end += increase_value
+            end += hashes_per_cycle
         self.tmp = []
-        return self.hash
+        return self
