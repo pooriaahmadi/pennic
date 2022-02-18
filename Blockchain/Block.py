@@ -1,6 +1,8 @@
 from __future__ import annotations
 from hashlib import sha256
 import multiprocessing
+from .Transaction import Transaction
+import json
 
 
 class Block():
@@ -24,10 +26,7 @@ class Block():
         return self.generate_hash_with_nonse(self.nonse)
 
     def generate_hash_with_nonse(self, nonse: int):
-        hash_transactions = ""
-        for transaction in self.trasactions:
-            hash_transactions += transaction.hash
-        return f"{self.index}{self.timestamp}{self.hardness}{self.prev_hash}{nonse}"
+        return f"{self.index}{self.timestamp}{self.hardness}{self.prev_hash}{json.dumps(self.trasactions)}{nonse}"
 
     def calculate_correct_hash(self) -> str:
         calculated = False
@@ -63,4 +62,10 @@ class Block():
             start = end
             end += hashes_per_cycle
         self.tmp = []
+        return self
+
+    def add_transaction(self, sender, reciever, amount, time, sender_private_key) -> Block:
+        transaction = Transaction(sender, reciever, amount, time)
+        transaction.sign(sender_private_key)
+        self.trasactions.append(transaction.to_json())
         return self

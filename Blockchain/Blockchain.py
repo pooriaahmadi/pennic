@@ -16,8 +16,8 @@ class Blockchain():
     @staticmethod
     def generateKeys():
         key = RSA.generate(2048)
-        private_key = key.exportKey()
-        public_key = key.publickey().exportKey()
+        private_key = key.exportKey(format="PEM")
+        public_key = key.publickey().exportKey(format="PEM")
 
         public_key_file = open("public.pem", 'wb')
         public_key_file.write(public_key)
