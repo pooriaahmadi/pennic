@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pycryptodome = "*"
+autopep8 = "*"
+python-dotenv = "*"
+pypika = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.10"
+
+[scripts]
+generatekeys = "python pennic/generate_keys.py"
+benchmark = "python pennic/benchmark.py"
+example = "python pennic/chain_example.py"
+setup_database = "python pennic/setup_database.py"

@@ -2,12 +2,32 @@ from typing import List
 from .Block import Block
 import hashlib
 from Crypto.PublicKey import RSA
-import multiprocessing
+from Database import Database
+from pypika import Query, Column, enums, functions, queries
+import os
 
 
 class Blockchain():
-    def __init__(self) -> None:
+    def __init__(self, database_path: str) -> None:
         self.__blocks = []
+        self.database = Database(database_path)
+        self.database.setup()
+
+    def install_database(self):
+        os.remove(self.database.path)
+        open(self.database.path, "w").close()
+        self.database.setup()
+
+        query: queries.CreateQueryBuilder = Query.create_table("blocks").columns(
+            Column("id", enums.SqlTypes.INTEGER, nullable=False),
+            Column("timestamp", enums.SqlTypes.TIMESTAMP,
+                   nullable=False, default=functions.CurTimestamp()),
+            Column("previous_block", enums.SqlTypes.INTEGER, nullable=True),
+            Column("hardness", enums.SqlTypes.INTEGER, nullable=False),
+            Column("nonse", enums.SqlTypes.INTEGER, nullable=False),
+        ).unique("previous_block").primary_key("id")
+        self.database.execute(query.__str__())
+        self.database.commit()
 
     @property
     def blocks(self) -> List[Block]:
