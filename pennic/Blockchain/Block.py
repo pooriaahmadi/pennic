@@ -64,8 +64,8 @@ class Block():
         self.tmp = []
         return self
 
-    def add_transaction(self, sender, reciever, amount, time, sender_private_key) -> Block:
-        transaction = Transaction(sender, reciever, amount, time)
+    def add_transaction(self, sender, receiver, amount, time, sender_private_key) -> Block:
+        transaction = Transaction(sender, receiver, amount, time)
         transaction.sign(sender_private_key)
         self.trasactions.append(transaction.to_json())
         return self

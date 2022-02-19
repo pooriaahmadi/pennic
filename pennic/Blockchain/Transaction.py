@@ -1,12 +1,12 @@
 from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
-import json
 
 
 class Transaction():
-    def __init__(self, sender, reciever, amount, time) -> None:
+    def __init__(self, index, sender, receiver, amount, time) -> None:
+        self.index = index
         self.sender = sender  # sender public key
-        self.reciever = reciever  # reciever public key
+        self.receiver = receiver  # receiver public key
         self.amount = amount
         self.time = time
         self.hash = self.generate_hash()
@@ -21,15 +21,16 @@ class Transaction():
         self.__hash = SHA256.new(value.encode("utf-8"))
 
     def generate_hash(self) -> str:
-        return f"{self.sender}{self.reciever}{self.amount}{self.time}"
+        return f"{self.sender}{self.receiver}{self.amount}{self.time}"
 
     def sign(self, private_key):
         self.signature = pkcs1_15.new(private_key).sign(self.__hash)
 
     def to_json(self):
         return {
+            "index": self.index,
             "sender": self.sender.decode(),
-            "reciever": self.reciever.decode(),
+            "receiver": self.receiver.decode(),
             "amount": self.amount,
             "time": self.time,
             "hash": self.hash,

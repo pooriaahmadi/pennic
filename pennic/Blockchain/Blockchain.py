@@ -1,3 +1,4 @@
+from pickle import TRUE
 from typing import List
 from .Block import Block
 import hashlib
@@ -18,7 +19,7 @@ class Blockchain():
         open(self.database.path, "w").close()
         self.database.setup()
 
-        query: queries.CreateQueryBuilder = Query.create_table("blocks").columns(
+        blocks_query: queries.CreateQueryBuilder = Query.create_table("blocks").columns(
             Column("id", enums.SqlTypes.INTEGER, nullable=False),
             Column("timestamp", enums.SqlTypes.TIMESTAMP,
                    nullable=False, default=functions.CurTimestamp()),
@@ -26,7 +27,22 @@ class Blockchain():
             Column("hardness", enums.SqlTypes.INTEGER, nullable=False),
             Column("nonse", enums.SqlTypes.INTEGER, nullable=False),
         ).unique("previous_block").primary_key("id")
-        self.database.execute(query.__str__())
+        transactions_query: queries.CreateQueryBuilder = Query.create_table("transactions").columns(
+            Column("id", enums.SqlTypes.INTEGER, nullable=False),
+            Column("sender", enums.SqlTypes.VARCHAR(
+                2048).get_sql(), nullable=True),
+            Column("receiver", enums.SqlTypes.VARCHAR(
+                2048).get_sql(), nullable=False),
+            Column("amount", enums.SqlTypes.INTEGER, nullable=False),
+            Column("timestamp", enums.SqlTypes.TIMESTAMP,
+                   default=functions.CurTimestamp(), nullable=False),
+            Column("hash", enums.SqlTypes.VARCHAR(
+                256).get_sql(), nullable=False),
+            Column("signature", enums.SqlTypes.VARCHAR(
+                2048).get_sql(), nullable=False)
+        ).primary_key("id")
+        self.database.execute(blocks_query.__str__())
+        self.database.execute(transactions_query.__str__())
         self.database.commit()
 
     @property

@@ -1,0 +1,11 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "pennic_database",
+            "database": "${workspaceFolder:pennic}/blockchain.db"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
+}
