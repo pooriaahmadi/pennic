@@ -2,17 +2,18 @@ from __future__ import annotations
 from hashlib import sha256
 import multiprocessing
 from .Transaction import Transaction
+import time
 import json
 
 
 class Block():
-    def __init__(self, index: int, timestamp: float, hardness=2, prev_hash: str = None, nonse=0, transactions=[]) -> None:
+    def __init__(self, index: int, timestamp: float, hardness=2, prev_hash: str = None, nonse=0) -> None:
         self.index = index
         self.timestamp = timestamp
         self.prev_hash = prev_hash
         self.hardness = hardness
         self.nonse = nonse
-        self.trasactions = transactions
+        self.trasactions = []
 
     @property
     def hash(self) -> str:
@@ -44,7 +45,9 @@ class Block():
         if hash.startswith('0' * self.hardness):
             return [hash, nonse]
 
-    def calculate_correct_hash_multiprocess(self, hashes_per_cycle=8000) -> Block:
+    def calculate_correct_hash_multiprocess(self, miner_private_key, hashes_per_cycle) -> Block:
+        self.add_transaction(len(self.trasactions), "network".encode("utf-8"), miner_private_key.public_key(
+        ).export_key(), 10, time.time(), miner_private_key)
         pool = multiprocessing.Pool(multiprocessing.cpu_count())
         is_done = False
         start = 0
@@ -64,8 +67,8 @@ class Block():
         self.tmp = []
         return self
 
-    def add_transaction(self, sender, receiver, amount, time, sender_private_key) -> Block:
-        transaction = Transaction(sender, receiver, amount, time)
+    def add_transaction(self, index, sender, receiver, amount, time, sender_private_key) -> Block:
+        transaction = Transaction(index, sender, receiver, amount, time)
         transaction.sign(sender_private_key)
         self.trasactions.append(transaction.to_json())
         return self

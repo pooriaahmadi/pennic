@@ -29,6 +29,7 @@ class Blockchain():
         ).unique("previous_block").primary_key("id")
         transactions_query: queries.CreateQueryBuilder = Query.create_table("transactions").columns(
             Column("id", enums.SqlTypes.INTEGER, nullable=False),
+            Column("block_index", enums.SqlTypes.INTEGER, nullable=False),
             Column("sender", enums.SqlTypes.VARCHAR(
                 2048).get_sql(), nullable=True),
             Column("receiver", enums.SqlTypes.VARCHAR(
@@ -39,10 +40,11 @@ class Blockchain():
             Column("hash", enums.SqlTypes.VARCHAR(
                 256).get_sql(), nullable=False),
             Column("signature", enums.SqlTypes.VARCHAR(
-                2048).get_sql(), nullable=False)
+                2048).get_sql(), nullable=False),
+            Column("block", enums.SqlTypes.INTEGER, nullable=False)
         ).primary_key("id")
-        self.database.execute(blocks_query.__str__())
-        self.database.execute(transactions_query.__str__())
+        self.database.execute(blocks_query.get_sql())
+        self.database.execute(transactions_query.get_sql())
         self.database.commit()
 
     @property
@@ -77,6 +79,18 @@ class Blockchain():
             if not hash.startswith('0'*block.hardness) or not (previous_block.index + 1) == block.index:
                 raise ValueError("requested block does not fit the blockchain")
 
+        # Inserting block into database
+        query = Query.into("blocks").insert(
+            block.index, block.timestamp, block.index - 1, block.hardness, block.nonse)
+        self.database.execute(query.get_sql())
+
+        # Inserting transactions into database
+        for transaction in block.trasactions:
+            query = Query.into("transactions").insert(None, transaction["index"], transaction["sender"], transaction["receiver"],
+                                                      transaction["amount"], transaction["time"], transaction["hash"], transaction["signature"], block.index)
+            self.database.execute(query.get_sql())
+
+        self.database.commit()
         self.__blocks.append(block)
 
     def __str__(self) -> str:
