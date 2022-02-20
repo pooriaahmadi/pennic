@@ -63,14 +63,14 @@ class Blockchain():
                 prev_hash = self.blocks[-1].hash
             block = Block(fetched_block[0], fetched_block[1],
                           fetched_block[2], prev_hash, fetched_block[3])
-            for index, fetched_transaction in enumerate(fetched_transactions):
+            for fetched_transaction in fetched_transactions:
                 if fetched_transaction[8] == block.index:
                     transaction = Transaction(
                         fetched_transaction[1], fetched_transaction[2].encode("utf-8"), fetched_transaction[3].encode("utf-8"), fetched_transaction[4], fetched_transaction[5])
                     transaction.signature = fetched_transaction[7].encode(
                         "utf-8")
                     block.trasactions.append(transaction.to_json())
-                    del fetched_transactions[index]
+            block.hash = block.generate_hash()
             self.__blocks.append(block)
 
     def from_to_somewhere(self, start_block: int, end_block: int) -> List[Block]:

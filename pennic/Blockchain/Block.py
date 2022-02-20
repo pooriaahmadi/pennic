@@ -14,7 +14,7 @@ class Block():
         self.hardness = hardness
         self.nonse = nonse
         self.trasactions = []
-        self.hash = self.generate_hash()
+        self.__hash = None
 
     @property
     def hash(self) -> str:

@@ -1,14 +1,44 @@
+from io import TextIOWrapper
 import dotenv
 import os
 from Blockchain import Blockchain
 import uvicorn
-from fastapi import FastAPI
+import json
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+
 dotenv.load_dotenv()
 chain = Blockchain(os.getenv("BLOCKCHAIN_DATABASE_PATH"))
 chain.load_database()
+recent_nodes_file: TextIOWrapper = open(
+    os.getenv("RECENT_NODES_FILE_PATH"), 'r')
+recent_nodes = json.load(recent_nodes_file)
+recent_nodes_file.close()
+
+
 app = FastAPI()
 HOST = os.getenv("HOST")
 PORT = os.getenv("PORT")
+
+
+@app.middleware("http")
+async def get_ip_address(request: Request, call_next):
+    if not request.client.host in recent_nodes:
+        recent_nodes.append(request.client.host)
+        recent_nodes_file: TextIOWrapper = open(
+            os.getenv("RECENT_NODES_FILE_PATH"), 'w')
+        recent_nodes_file.write(json.dumps(recent_nodes))
+        recent_nodes_file.close()
+
+    response = await call_next(request)
+    return response
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/blockchain")
