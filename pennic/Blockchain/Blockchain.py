@@ -73,7 +73,16 @@ class Blockchain():
                     del fetched_transactions[index]
             self.__blocks.append(block)
 
-    def to_bytes(self):
+    def from_to_somewhere(self, start_block: int, end_block: int) -> List[Block]:
+        return list(filter(lambda x: x.index >= start_block and x.index <= end_block, self.blocks))
+
+    def from_to_somwhere_to_json(self, start_block: int, end_block: int):
+        return list(map(lambda x: x.to_json(), self.from_to_somewhere(start_block, end_block)))
+
+    def to_json(self):
+        return list(map(lambda x: x.to_json(), self.blocks))
+
+    def to_string(self):
         return json.dumps(list(map(lambda x: x.to_json(), self.blocks))).encode("utf-8")
 
     @property

@@ -8,6 +8,9 @@ pycryptodome = "*"
 autopep8 = "*"
 python-dotenv = "*"
 pypika = "*"
+requests = "*"
+fastapi = "*"
+uvicorn = "*"
 
 [dev-packages]
 

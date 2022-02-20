@@ -34,5 +34,5 @@ class Transaction():
             "amount": self.amount,
             "time": self.time,
             "hash": self.hash,
-            "signature": self.signature.hex()
+            "signature": self.signature.decode("utf-8")
         }
