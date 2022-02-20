@@ -14,6 +14,7 @@ class Block():
         self.hardness = hardness
         self.nonse = nonse
         self.trasactions = []
+        self.hash = self.generate_hash()
 
     @property
     def hash(self) -> str:
@@ -72,3 +73,14 @@ class Block():
         transaction.sign(sender_private_key)
         self.trasactions.append(transaction.to_json())
         return self
+
+    def to_json(self):
+        return {
+            "index": self.index,
+            "timestamp": self.timestamp,
+            "prev_hash": self.prev_hash,
+            "hardness": self.hardness,
+            "nonse": self.nonse,
+            "transactions": self.trasactions,
+            "hash": self.hash
+        }

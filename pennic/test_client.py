@@ -1,11 +1,14 @@
 import socket
-from Socket import Message
+from Blockchain import Message
 HOST, PORT = "localhost", 9999
 
-# Create a socket (SOCK_STREAM means a TCP socket)
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-    # Connect to server and send data
     sock.connect((HOST, PORT))
-    message = Message.from_string("Hi server!")
+    message = Message.from_string("", 0)
     sock.sendall(message.to_bytes())
-    # sock.sendall(bytes(data + "\n", "utf-8"))
+    response = Message.receive(sock)
+    if response.mode_int == 1:
+        print("node has accepted us")
+    sock.sendall(Message.from_string("", 3).to_bytes())
+    chain = Message.receive(sock)
+    print(chain.data_string)

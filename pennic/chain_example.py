@@ -7,7 +7,7 @@ import os
 load_dotenv()
 
 hashes_rate = int(os.getenv("HASH_RATE"))  # got from the benchmark.py
-hardness = 6
+hardness = 5
 private = None
 with open("private.pem", "rb") as private_file:
     private = RSA.import_key(private_file.read())

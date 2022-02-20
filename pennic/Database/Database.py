@@ -19,3 +19,6 @@ class Database():
 
     def commit(self):
         self.connection.commit()
+
+    def fetchall(self) -> list:
+        return self.cursor.fetchall()

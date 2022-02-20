@@ -1,11 +1,13 @@
-from pickle import TRUE
 from typing import List
 from .Block import Block
 import hashlib
 from Crypto.PublicKey import RSA
+from Crypto.Signature import pkcs1_15
 from Database import Database
 from pypika import Query, Column, enums, functions, queries
+from .Transaction import Transaction
 import os
+import json
 
 
 class Blockchain():
@@ -23,10 +25,11 @@ class Blockchain():
             Column("id", enums.SqlTypes.INTEGER, nullable=False),
             Column("timestamp", enums.SqlTypes.TIMESTAMP,
                    nullable=False, default=functions.CurTimestamp()),
-            Column("previous_block", enums.SqlTypes.INTEGER, nullable=True),
             Column("hardness", enums.SqlTypes.INTEGER, nullable=False),
             Column("nonse", enums.SqlTypes.INTEGER, nullable=False),
-        ).unique("previous_block").primary_key("id")
+            Column("hash", enums.SqlTypes.VARCHAR(
+                256).get_sql(), nullable=False)
+        ).primary_key("id")
         transactions_query: queries.CreateQueryBuilder = Query.create_table("transactions").columns(
             Column("id", enums.SqlTypes.INTEGER, nullable=False),
             Column("block_index", enums.SqlTypes.INTEGER, nullable=False),
@@ -46,6 +49,32 @@ class Blockchain():
         self.database.execute(blocks_query.get_sql())
         self.database.execute(transactions_query.get_sql())
         self.database.commit()
+
+    def load_database(self):
+        self.database.execute(Query.from_("blocks").select("*").get_sql())
+        fetched_blocks = self.database.fetchall()
+        self.database.execute(Query.from_(
+            "transactions").select("*").get_sql())
+        fetched_transactions = self.database.fetchall()
+
+        for index, fetched_block in enumerate(fetched_blocks):
+            prev_hash = None
+            if index != 0:
+                prev_hash = self.blocks[-1].hash
+            block = Block(fetched_block[0], fetched_block[1],
+                          fetched_block[2], prev_hash, fetched_block[3])
+            for index, fetched_transaction in enumerate(fetched_transactions):
+                if fetched_transaction[8] == block.index:
+                    transaction = Transaction(
+                        fetched_transaction[1], fetched_transaction[2].encode("utf-8"), fetched_transaction[3].encode("utf-8"), fetched_transaction[4], fetched_transaction[5])
+                    transaction.signature = fetched_transaction[7].encode(
+                        "utf-8")
+                    block.trasactions.append(transaction.to_json())
+                    del fetched_transactions[index]
+            self.__blocks.append(block)
+
+    def to_bytes(self):
+        return json.dumps(list(map(lambda x: x.to_json(), self.blocks))).encode("utf-8")
 
     @property
     def blocks(self) -> List[Block]:
@@ -81,7 +110,7 @@ class Blockchain():
 
         # Inserting block into database
         query = Query.into("blocks").insert(
-            block.index, block.timestamp, block.index - 1, block.hardness, block.nonse)
+            block.index, block.timestamp, block.hardness, block.nonse, block.hash)
         self.database.execute(query.get_sql())
 
         # Inserting transactions into database

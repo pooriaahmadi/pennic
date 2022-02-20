@@ -1,6 +1,6 @@
 import dotenv
 import os
-from Socket import TcpServer, TcpHandler
+from Blockchain import TcpServer, TcpHandler
 dotenv.load_dotenv()
 
 if __name__ == "__main__":
