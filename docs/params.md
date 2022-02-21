@@ -5,7 +5,7 @@ carefully chosen to mimick Bitcoin's. We do make one exception: blocks are mined
 every 10 minutes. This is because careful research has shown that shorter time spans ~~give stronger dopamine rushes~~
 provide a more interactive experience.
 
-Thus, the [main parameters](../pennic/params.py) of pennic are:
+Thus, the [main parameters](../pennic/Blockchain/Block.py) of pennic are:
 
 - 2 minute blocks (on average)
 - 2 week target readjustment intervals (every 10,080 blocks the difficulty target is readjusted)
