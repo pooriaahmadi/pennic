@@ -44,7 +44,7 @@ right in the directory where they're being called. This includes your wallet.
 Pennic is a "early phase" coin. This means you can probably mine some yourself, as per the instructions above.
 
 If you have ethical objections against this, you can always go to the
-[faucet](https://github.com/pennic/pennic/issues/1) to get some free coin.
+[faucet](https://github.com/pooriaahmadi/pennic/issues/1) to get some free coin.
 
 ## Frequently Asked Questions
 
@@ -62,7 +62,7 @@ If you have ethical objections against this, you can always go to the
 
 **Q:** Is it safe to put my life savings into pennic?
 
-**A:** [No](https://github.com/pennic/skepticoin/blob/master/docs/security.md)
+**A:** [No](https://github.com/pooriaahmadi/pennic/blob/master/docs/security.md)
 
 ---
 
@@ -103,8 +103,8 @@ The best places to find other Pennics are
 
 Some ways you can contribute to this project:
 
-- Spread the news. ([Remember the first principle](https://github.com/pennic/pennic/blob/master/docs/philosophy/principles.md))
-- [Set up port forwarding on your router](https://github.com/pennic/pennic/blob/master/docs/port-forwarding.md)
-- [File a bug](https://github.com/pennic/pennic/issues/new) if you have one
+- Spread the news. ([Remember the first principle](https://github.com/pooriaahmadi/pennic/blob/master/docs/philosophy/principles.md))
+- [Set up port forwarding on your router](https://github.com/pooriaahmadi/pennic/blob/master/docs/port-forwarding.md)
+- [File a bug](https://github.com/pooriaahmadi/pennic/issues/new) if you have one
 - Open a PR (but make sure to read
-  [CONTRIBUTING.md](https://github.com/pennic/pennic/blob/master/CONTRIBUTING.md) first
+  [CONTRIBUTING.md](https://github.com/pooriaahmadi/pennic/blob/master/CONTRIBUTING.md) first
