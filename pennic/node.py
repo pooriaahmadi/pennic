@@ -34,19 +34,13 @@ class BlockMined(BaseModel):
     hash: str
 
 
-class Node():
-    def __init__(self, host: str, port: int) -> None:
-        self.host = host
-        self.port = port
-
-
 nodes_ask_limit = int(os.getenv("NODES_ASK_LIMIT"))
 chain = Blockchain(os.getenv("BLOCKCHAIN_DATABASE_PATH"))
 chain.load_database()
 recent_nodes_file: TextIOWrapper = open(
     os.getenv("RECENT_NODES_FILE_PATH"), 'r')
 recent_nodes: list = json.load(recent_nodes_file)
-connected_nodes: List[Node] = []
+connected_nodes: List[str] = []
 recent_nodes_file.close()
 
 
@@ -78,14 +72,14 @@ app.add_middleware(
 async def broadcast_transaction_to_nodes(transaction: TransactionBase):
     for node in connected_nodes:
         requests.post(
-            f"{node.host}:{node.port}/broadcast/transaction", json=transaction.json())
+            f"{node}:{PORT}/broadcast/transaction", json=transaction.json())
     print(f"Broadcasted a transaction to {len(connected_nodes)}")
 
 
 async def broadcast_block_to_nodes(block: BlockMined):
     for node in connected_nodes:
         requests.post(
-            f"{node.host}:{node.port}/broadcast/block", json=block.json())
+            f"{node}:{PORT}/broadcast/block", json=block.json())
     print(f"Broadcasted a block to {len(connected_nodes)}")
 
 
@@ -152,29 +146,23 @@ if __name__ == "__main__":
     recent_nodes_file: TextIOWrapper = open(
         os.getenv("RECENT_NODES_FILE_PATH"), 'w')
     for recent_node in recent_nodes:
-        current_port = 34756
         if nodes_ask_limit <= 0:
             break
         nodes_ask_limit -= 1
-        while current_port <= 34760:
-            try:
-                resposne = None
-                if blocks_length >= 0:
-                    response = requests.get(
-                        f"http://{recent_node}:{current_port}/blockchain/{blocks_length}")
-                else:
-                    response = requests.get(
-                        f"http://{recent_node}:{current_port}/blockchain")
+        try:
+            resposne = None
+            if blocks_length >= 0:
+                response = requests.get(
+                    f"http://{recent_node}:{PORT}/blockchain/{blocks_length}")
+            else:
+                response = requests.get(
+                    f"http://{recent_node}:{PORT}/blockchain")
 
-                data = response.json()
-                received_blocks.append(data)
-                connected_nodes.append(Node(recent_node, current_port))
-                break
-            except:
-                print(f"Node {recent_node}:{current_port} didn't respond")
-                current_port += 1
-                continue
-        if current_port > 34760:
+            data = response.json()
+            received_blocks.append(data)
+            connected_nodes.append(recent_node)
+            break
+        except:
             print(f"Node {recent_node} is not active")
             recent_nodes.remove(recent_node)
 
