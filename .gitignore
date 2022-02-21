@@ -157,3 +157,4 @@ __pycache__
 blockchain.db
 Pipfile.lock
 recent_nodes.json
+.vscode
