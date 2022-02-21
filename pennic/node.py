@@ -111,7 +111,7 @@ async def mined_a_block(block: BlockMined, request: Request, response: Response)
 
 
 @app.port("/broadcast/block")
-async def broadcast_mined_block(block: BlockMined, respose: Response):
+async def broadcast_mined_block(block: BlockMined, response: Response):
     broadcast_block_to_nodes(block)
     transaction = block.transactions
     block: Block = Block(block.index, block.timestamp,

@@ -85,6 +85,10 @@ class Block():
         self.trasactions.append(transaction.to_json())
         return self
 
+    def add_existing_transaction(self, transaction: Transaction) -> Block:
+        self.trasactions.append(transaction.to_json())
+        return self
+
     @staticmethod
     def from_json(data: dict[str, any]) -> Block:
         block = Block(data["index"], data["timestamp"],

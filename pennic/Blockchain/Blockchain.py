@@ -8,6 +8,7 @@ from Database import Database
 from pypika import Query, Column, enums, functions, queries
 from .Transaction import Transaction
 import os
+import requests
 import json
 
 
@@ -129,6 +130,32 @@ class Blockchain():
 
         return (public_key, private_key)
 
+    def calculate_time_passed(self):
+        sum = 0
+        blocks_length = len(self.blocks)
+        if blocks_length <= 1:
+            return 2
+        for i in range(1, blocks_length):
+            block = self.blocks[i]
+            previous_block = self.blocks[i - 1]
+            sum += (block.timestamp - previous_block.timestamp)
+
+        return sum
+
+    def calculate_hardness(self):
+        return int((len(self.blocks) * 2) / self.calculate_time_passed / 60)
+
+    def new_block(self):
+        hardness = self.calculate_hardness()
+        block = Block(len(self.blocks), time.time(),
+                      hardness, self.blocks[-1].hash)
+        for transaction in self.pending_transactions:
+            block.add_existing_transaction(Transaction(transaction["index"], transaction["sender"].encode(
+                "utf-8"), transaction["receiver"].encode("utf-8"), transaction["amount"], transaction["time"], transaction["signature"]))
+
+        block.hash = block.generate_hash()
+        return block
+
     def calculate_correct_hash_multiprocess(self, block: Block, miner_private_key, hashes_per_cycle):
         blocks_length = len(self.blocks)
         block.add_transaction(len(block.trasactions), "network".encode("utf-8"), miner_private_key.public_key(
@@ -153,6 +180,8 @@ class Blockchain():
             start = end
             end += hashes_per_cycle
         block.tmp = []
+        requests.post(f"http://localhost:34756/self/block",
+                      json=block.to_json())
         return block
 
     def add_block(self, block: Block):
