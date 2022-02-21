@@ -33,5 +33,5 @@ chain.add_block(Block(
     hardness=hardness,
     nonse=0,
     prev_hash=chain.blocks[-1].hash
-).add_transaction(0, private.public_key().export_key(), b"Asd", 50, time.time(), private).calculate_correct_hash_multiprocess(private, hashes_rate))
+).calculate_correct_hash_multiprocess(private, hashes_rate))
 print(chain)

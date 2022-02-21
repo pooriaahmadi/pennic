@@ -2,7 +2,6 @@ from typing import List
 from .Block import Block
 import hashlib
 from Crypto.PublicKey import RSA
-from Crypto.Signature import pkcs1_15
 from Database import Database
 from pypika import Query, Column, enums, functions, queries
 from .Transaction import Transaction
@@ -13,8 +12,12 @@ import json
 class Blockchain():
     def __init__(self, database_path: str) -> None:
         self.__blocks = []
+        self.pending_transactions = []
         self.database = Database(database_path)
         self.database.setup()
+
+    def add_pending_transaction(self, transaction: Transaction):
+        self.pending_transactions.append(transaction.to_json())
 
     def install_database(self):
         os.remove(self.database.path)
@@ -67,14 +70,33 @@ class Blockchain():
                 if fetched_transaction[8] == block.index:
                     transaction = Transaction(
                         fetched_transaction[1], fetched_transaction[2].encode("utf-8"), fetched_transaction[3].encode("utf-8"), fetched_transaction[4], fetched_transaction[5])
-                    transaction.signature = fetched_transaction[7].encode(
-                        "utf-8")
+                    transaction.signature = fetched_transaction[7]
                     block.trasactions.append(transaction.to_json())
             block.hash = block.generate_hash()
             self.__blocks.append(block)
 
+    def validate_chain(self) -> bool:
+        is_ok = True
+        previous_block: Block = None
+        for block in self.blocks:
+            if previous_block:
+                block.prev_hash = previous_block.hash
+                block.hash = block.generate_hash()
+                if not block.is_valid():
+                    is_ok = False
+                    break
+                previous_block = block
+            else:
+                block.hash = block.generate_hash()
+                if not block.is_valid():
+                    is_ok = False
+                    break
+                previous_block = block
+
+        return is_ok
+
     def from_to_somewhere(self, start_block: int, end_block: int) -> List[Block]:
-        return list(filter(lambda x: x.index >= start_block and x.index <= end_block, self.blocks))
+        return list(filter(lambda x: x.index > start_block and x.index < end_block, self.blocks))
 
     def from_to_somwhere_to_json(self, start_block: int, end_block: int):
         return list(map(lambda x: x.to_json(), self.from_to_somewhere(start_block, end_block)))

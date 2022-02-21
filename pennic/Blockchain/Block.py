@@ -46,6 +46,14 @@ class Block():
         if hash.startswith('0' * self.hardness):
             return [hash, nonse]
 
+    def is_valid(self) -> bool:
+        if not self.hash.startswith('0'*self.hardness):
+            return False
+        for transaction in self.trasactions:
+            if not Transaction(transaction["index"], transaction["sender"], transaction["receiver"], transaction["amount"], transaction["time"]).validate():
+                return False
+        return True
+
     def calculate_correct_hash_multiprocess(self, miner_private_key, hashes_per_cycle) -> Block:
         self.add_transaction(len(self.trasactions), "network".encode("utf-8"), miner_private_key.public_key(
         ).export_key(), 10, time.time(), miner_private_key)
@@ -73,6 +81,14 @@ class Block():
         transaction.sign(sender_private_key)
         self.trasactions.append(transaction.to_json())
         return self
+
+    @staticmethod
+    def from_json(data: dict[str, any]) -> Block:
+        block = Block(data["index"], data["timestamp"],
+                      data["hardness"], data["prev_hash"], data["nonse"])
+        block.trasactions = data["transactions"]
+        block.hash = block.generate_hash()
+        return block
 
     def to_json(self):
         return {
