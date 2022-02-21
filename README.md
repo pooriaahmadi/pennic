@@ -70,7 +70,7 @@ If you have ethical objections against this, you can always go to the
 
 **O:** I can't buy pennic at an exchange -- this means it's not a "real" coin!
 
-**A:** You have that exactly backwards: Skepticoin is a peer-to-peer digital currency, which means it's independent from
+**A:** You have that exactly backwards: Pennic is a peer-to-peer digital currency, which means it's independent from
 established financial institutions such as exchanges. This independence is precisely its strength! You aren't
 trying to suggest that cryptocurrency's main claim to fame is untrue, are you?
 
@@ -94,7 +94,7 @@ illiterate are only allowed to join the lower ranks of the pyramid, so that GUI 
 
 The best places to find other Pennics are
 
-- [The Skepticoin Subreddit](https://www.reddit.com/r/pennic/) (use [old.reddit.com to avoid the popup on
+- [The Pennic Subreddit](https://www.reddit.com/r/pennic/) (use [old.reddit.com to avoid the popup on
   mobile](https://old.reddit.com/r/pennic/) if you don't have a Reddit account.)
 
 - [Discord](https://discord.gg/SsyE7QCcTJ)
