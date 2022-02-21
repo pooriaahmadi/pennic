@@ -107,6 +107,15 @@ async def from_to_end_blockchain(start_block):
     return chain.from_to_somwhere_to_json(start_block, len(chain.blocks) - 1)
 
 
+@app.post("/self/block")
+async def mined_a_block(block: BlockMined, request: Request, response: Response):
+    if not request.client.host in ["localhost", "127.0.0.1"]:
+        response.status_code = status.HTTP_403_FORBIDDEN
+        return {"message": "you're not me >;/"}
+    broadcast_block_to_nodes(block)
+    return {}
+
+
 @app.port("/broadcast/block")
 async def broadcast_mined_block(block: BlockMined, respose: Response):
     broadcast_block_to_nodes(block)

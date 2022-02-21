@@ -1,3 +1,5 @@
+import multiprocessing
+from time import time
 from typing import List
 from .Block import Block
 import hashlib
@@ -126,6 +128,32 @@ class Blockchain():
         private_key_file.close()
 
         return (public_key, private_key)
+
+    def calculate_correct_hash_multiprocess(self, block: Block, miner_private_key, hashes_per_cycle):
+        blocks_length = len(self.blocks)
+        block.add_transaction(len(block.trasactions), "network".encode("utf-8"), miner_private_key.public_key(
+        ).export_key(), 10, time.time(), miner_private_key)
+        pool = multiprocessing.Pool(multiprocessing.cpu_count())
+        is_done = False
+        start = 0
+        end = hashes_per_cycle
+
+        while not is_done:
+            results = pool.map(block.pool_hashing, range(start, end))
+            if blocks_length != len(self.blocks):
+                is_done = True
+            for result in results:
+                if result == None:
+                    continue
+                block.override_hash(result[0])
+                block.nonse = result[1]
+                is_done = True
+                self.add_block(block)
+                break
+            start = end
+            end += hashes_per_cycle
+        block.tmp = []
+        return block
 
     def add_block(self, block: Block):
         if len(self.blocks) and not block.prev_hash:

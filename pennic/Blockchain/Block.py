@@ -54,6 +54,9 @@ class Block():
                 return False
         return True
 
+    def override_hash(self, value):
+        self.__hash = value
+
     def calculate_correct_hash_multiprocess(self, miner_private_key, hashes_per_cycle) -> Block:
         self.add_transaction(len(self.trasactions), "network".encode("utf-8"), miner_private_key.public_key(
         ).export_key(), 10, time.time(), miner_private_key)
