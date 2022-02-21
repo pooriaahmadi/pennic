@@ -62,7 +62,7 @@ If you have ethical objections against this, you can always go to the
 
 **Q:** Is it safe to put my life savings into pennic?
 
-**A:** [No](https://github.com/pooriaahmadi/pennic/blob/master/docs/security.md)
+**A:** [No](https://github.com/pooriaahmadi/pennic/blob/main/docs/security.md)
 
 ---
 
@@ -103,8 +103,8 @@ The best places to find other Pennics are
 
 Some ways you can contribute to this project:
 
-- Spread the news. ([Remember the first principle](https://github.com/pooriaahmadi/pennic/blob/master/docs/philosophy/principles.md))
-- [Set up port forwarding on your router](https://github.com/pooriaahmadi/pennic/blob/master/docs/port-forwarding.md)
+- Spread the news. ([Remember the first principle](https://github.com/pooriaahmadi/pennic/blob/main/docs/philosophy/principles.md))
+- [Set up port forwarding on your router](https://github.com/pooriaahmadi/pennic/blob/main/docs/port-forwarding.md)
 - [File a bug](https://github.com/pooriaahmadi/pennic/issues/new) if you have one
 - Open a PR (but make sure to read
-  [CONTRIBUTING.md](https://github.com/pooriaahmadi/pennic/blob/master/CONTRIBUTING.md) first
+  [CONTRIBUTING.md](https://github.com/pooriaahmadi/pennic/blob/main/CONTRIBUTING.md) first
