@@ -10,7 +10,7 @@ import uvicorn
 import requests
 import json
 from fastapi import FastAPI, Request, Response, status
-import multiprocessing
+import threading
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from Crypto.PublicKey import RSA
@@ -57,7 +57,7 @@ HOST = os.getenv("HOST")
 PORT = int(os.getenv("PORT"))
 
 
-@ app.middleware("http")
+@app.middleware("http")
 async def get_ip_address(request: Request, call_next):
     if not request.client.host in recent_nodes:
         recent_nodes.append(request.client.host)
@@ -94,30 +94,30 @@ def broadcast_block_to_nodes(block: BlockMined):
     print(f"Broadcasted a block to {len(connected_nodes)}")
 
 
-@ app.get("/blockchain")
+@app.get("/blockchain")
 async def blockchain():
     return chain.to_json()
 
 
-@ app.get("/blockchain/{start_block}/{end_block}")
+@app.get("/blockchain/{start_block}/{end_block}")
 async def from_to_somewhere_blockchain(start_block, end_block):
     start_block = int(start_block)
     end_block = int(end_block)
     return chain.from_to_somwhere_to_json(start_block, end_block)
 
 
-@ app.get("/blockchain/{start_block}")
+@app.get("/blockchain/{start_block}")
 async def from_to_end_blockchain(start_block):
     start_block = int(start_block)
     return chain.from_to_somwhere_to_json(start_block, len(chain.blocks) - 1)
 
 
-@ app.get("/nodes/")
+@app.get("/nodes/")
 async def nodes():
     return recent_nodes
 
 
-@ app.post("/broadcast/block")
+@app.post("/broadcast/block")
 async def broadcast_mined_block(block: BlockMined, response: Response):
     broadcast_block_to_nodes(block)
     transaction = block.transactions
@@ -131,7 +131,7 @@ async def broadcast_mined_block(block: BlockMined, response: Response):
     chain.add_block(block)
 
 
-@ app.post("/broadcast/transaction")
+@app.post("/broadcast/transaction")
 async def broadcast_transaction(transaction: TransactionBase, response: Response):
     broadcast_transaction_to_nodes(transaction)
     transaction: Transaction = Transaction(
@@ -149,6 +149,7 @@ async def broadcast_transaction(transaction: TransactionBase, response: Response
 
 
 def mine():
+    chain.database.setup()
     while True:
         block = chain.new_block()
         print(block.hardness)
@@ -207,9 +208,9 @@ if __name__ == "__main__":
     if not chain.validate_chain():
         print("Chain is not valid")
 
-    mining_process = multiprocessing.Process(target=mine)
+    mining_process = threading.Thread(target=mine)
     mining_process.daemon = True
-    mining_process.run()
+    mining_process.start()
 
     uvicorn.run("node:app", port=PORT, reload=True if int(
         os.getenv("DEVELOPMENT")) else False)
