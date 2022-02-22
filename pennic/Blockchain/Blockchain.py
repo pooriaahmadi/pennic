@@ -145,7 +145,7 @@ class Blockchain():
     def calculate_hardness(self):
         if len(self.blocks) == 0:
             return 5
-        return int((len(self.blocks) * 2) / (self.calculate_time_passed() / 60))
+        return int((len(self.blocks) * 0.5) / (self.calculate_time_passed() / 60))
 
     def new_block(self):
         hardness = self.calculate_hardness()

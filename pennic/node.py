@@ -61,6 +61,7 @@ PORT = int(os.getenv("PORT"))
 async def get_ip_address(request: Request, call_next):
     if not request.client.host in recent_nodes:
         recent_nodes.append(request.client.host)
+        connected_nodes.append(request.client.host)
         recent_nodes_file: TextIOWrapper = open(
             os.getenv("RECENT_NODES_FILE_PATH"), 'w')
         recent_nodes_file.write(json.dumps(recent_nodes))
