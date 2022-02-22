@@ -13,10 +13,10 @@ import json
 
 
 class Blockchain():
-    def __init__(self, database_path: str) -> None:
+    def __init__(self) -> None:
         self.__blocks = []
         self.pending_transactions = []
-        self.database = Database(database_path)
+        self.database = Database("blockchain.db")
         self.database.setup()
 
     def add_pending_transaction(self, transaction: Transaction):
