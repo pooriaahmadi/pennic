@@ -1,4 +1,3 @@
-from concurrent.futures import process
 from io import TextIOWrapper
 import operator
 import random
@@ -193,7 +192,7 @@ if __name__ == "__main__":
     recent_nodes_file.close()
     accpeted_blocks = [0, []]
     for received_block in received_blocks:
-        if received_blocks.count(received_block) >= accpeted_blocks[0]:
+        if received_blocks.count(received_block) >= accpeted_blocks[0] and not HOST == received_block:
             accpeted_blocks[1] = received_block
     accpeted_blocks[1].sort(key=operator.attrgetter("index"))
 
