@@ -1,5 +1,5 @@
 import multiprocessing
-from time import time
+import time
 from typing import List
 from .Block import Block
 import hashlib
@@ -143,12 +143,14 @@ class Blockchain():
         return sum
 
     def calculate_hardness(self):
-        return int((len(self.blocks) * 2) / self.calculate_time_passed / 60)
+        if len(self.blocks) == 0:
+            return 5
+        return int((len(self.blocks) * 2) / (self.calculate_time_passed() / 60))
 
     def new_block(self):
         hardness = self.calculate_hardness()
         block = Block(len(self.blocks), time.time(),
-                      hardness, self.blocks[-1].hash)
+                      hardness, None if len(self.blocks) == 0 else self.blocks[-1].hash)
         for transaction in self.pending_transactions:
             block.add_existing_transaction(Transaction(transaction["index"], transaction["sender"].encode(
                 "utf-8"), transaction["receiver"].encode("utf-8"), transaction["amount"], transaction["time"], transaction["signature"]))

@@ -1,17 +1,20 @@
+from concurrent.futures import process
 from io import TextIOWrapper
 import operator
+import random
 from typing import List
+from urllib import request
 import dotenv
 import os
-from Blockchain import Blockchain, Transaction
+from Blockchain import Blockchain, Transaction, Block
 import uvicorn
 import requests
 import json
 from fastapi import FastAPI, Request, Response, status
+import multiprocessing
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-
-from pennic.Blockchain.Block import Block
+from Crypto.PublicKey import RSA
 dotenv.load_dotenv()
 
 
@@ -34,12 +37,18 @@ class BlockMined(BaseModel):
     hash: str
 
 
+hashes_rate = int(os.getenv("HASH_RATE"))  # got from the benchmark.py
+hardness = 5
+private = None
+with open("private.pem", "rb") as private_file:
+    private = RSA.import_key(private_file.read())
 nodes_ask_limit = int(os.getenv("NODES_ASK_LIMIT"))
 chain = Blockchain(os.getenv("BLOCKCHAIN_DATABASE_PATH"))
 chain.load_database()
 recent_nodes_file: TextIOWrapper = open(
     os.getenv("RECENT_NODES_FILE_PATH"), 'r')
 recent_nodes: list = json.load(recent_nodes_file)
+random.shuffle(recent_nodes)
 connected_nodes: List[str] = []
 recent_nodes_file.close()
 
@@ -69,14 +78,14 @@ app.add_middleware(
 )
 
 
-async def broadcast_transaction_to_nodes(transaction: TransactionBase):
+def broadcast_transaction_to_nodes(transaction: TransactionBase):
     for node in connected_nodes:
         requests.post(
             f"{node}:{PORT}/broadcast/transaction", json=transaction.json())
     print(f"Broadcasted a transaction to {len(connected_nodes)}")
 
 
-async def broadcast_block_to_nodes(block: BlockMined):
+def broadcast_block_to_nodes(block: BlockMined):
     for node in connected_nodes:
         requests.post(
             f"{node}:{PORT}/broadcast/block", json=block.json())
@@ -101,16 +110,12 @@ async def from_to_end_blockchain(start_block):
     return chain.from_to_somwhere_to_json(start_block, len(chain.blocks) - 1)
 
 
-@app.post("/self/block")
-async def mined_a_block(block: BlockMined, request: Request, response: Response):
-    if not request.client.host in ["localhost", "127.0.0.1"]:
-        response.status_code = status.HTTP_403_FORBIDDEN
-        return {"message": "you're not me >;/"}
-    broadcast_block_to_nodes(block)
-    return {}
+@app.get("/nodes/")
+async def nodes():
+    return recent_nodes
 
 
-@app.port("/broadcast/block")
+@app.post("/broadcast/block")
 async def broadcast_mined_block(block: BlockMined, response: Response):
     broadcast_block_to_nodes(block)
     transaction = block.transactions
@@ -140,6 +145,17 @@ async def broadcast_transaction(transaction: TransactionBase, response: Response
     chain.add_pending_transaction(transaction)
     return {}
 
+
+def mine():
+    while True:
+        block = chain.new_block()
+        print(block.hardness)
+        block.calculate_correct_hash_multiprocess(private, hashes_rate)
+        broadcast_block_to_nodes(BlockMined(index=block.index, timestamp=block.timestamp, hardness=block.hardness,
+                                 prev_hash=block.prev_hash, transactions=block.trasactions, nonse=block.nonse, hash=block.hash))
+        chain.add_block(block)
+
+
 if __name__ == "__main__":
     blocks_length = len(chain.blocks) - 1
     received_blocks = []
@@ -166,6 +182,13 @@ if __name__ == "__main__":
             print(f"Node {recent_node} is not active")
             recent_nodes.remove(recent_node)
 
+    if len(connected_nodes) <= nodes_ask_limit / 2:
+        for node in connected_nodes:
+            response = request.get(f"http://{node}:{PORT}/nodes/")
+            data = response.json()
+            for fetched_node in data:
+                if not fetched_node in recent_nodes:
+                    recent_nodes.append(fetched_node)
     recent_nodes_file.write(json.dumps(recent_nodes))
     recent_nodes_file.close()
     accpeted_blocks = [0, []]
@@ -181,6 +204,10 @@ if __name__ == "__main__":
     del blocks_length
     if not chain.validate_chain():
         print("Chain is not valid")
+
+    mining_process = multiprocessing.Process(target=mine)
+    mining_process.daemon = True
+    mining_process.run()
 
     uvicorn.run("node:app", port=PORT, reload=True if int(
         os.getenv("DEVELOPMENT")) else False)
