@@ -11,11 +11,12 @@ import uvicorn
 import requests
 import json
 from fastapi import FastAPI, Request, Response, status
-import threading
+import multiprocessing
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from Crypto.PublicKey import RSA
 dotenv.load_dotenv()
+thread_running = True
 
 
 class TransactionBase(BaseModel):
@@ -150,14 +151,18 @@ async def broadcast_transaction(transaction: TransactionBase, response: Response
 
 
 def mine():
-    chain.database.setup()
-    while True:
+    while thread_running:
         block = chain.new_block()
         print(block.hardness)
         block.calculate_correct_hash_multiprocess(private, hashes_rate)
         broadcast_block_to_nodes(BlockMined(index=block.index, timestamp=block.timestamp, hardness=block.hardness,
                                  prev_hash=block.prev_hash, transactions=block.trasactions, nonse=block.nonse, hash=block.hash))
         chain.add_block(block)
+
+
+def runapp():
+    uvicorn.run("node:app", port=PORT, host='0.0.0.0', reload=True if int(
+        os.getenv("DEVELOPMENT")) else False)
 
 
 if __name__ == "__main__":
@@ -209,11 +214,7 @@ if __name__ == "__main__":
     if not chain.validate_chain():
         print("Chain is not valid")
 
-    mining_process = threading.Thread(target=mine)
-    mining_process.daemon = True
+    mining_process = multiprocessing.Process(target=mine)
     mining_process.start()
-
-    uvicorn.run("node:app", port=PORT, host='0.0.0.0', reload=True if int(
-        os.getenv("DEVELOPMENT")) else False)
-
-    sys.exit()
+    api_process = multiprocessing.Process(target=runapp)
+    api_process.start()
