@@ -1,6 +1,7 @@
 from io import TextIOWrapper
 import operator
 import random
+import sys
 from typing import List, Optional
 from urllib import request
 import dotenv
@@ -212,5 +213,7 @@ if __name__ == "__main__":
     mining_process.daemon = True
     mining_process.start()
 
-    uvicorn.run("node:app", port=PORT, reload=True if int(
+    uvicorn.run("node:app", port=PORT, host='0.0.0.0', reload=True if int(
         os.getenv("DEVELOPMENT")) else False)
+
+    sys.exit()
