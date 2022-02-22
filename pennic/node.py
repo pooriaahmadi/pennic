@@ -3,7 +3,6 @@ import operator
 import random
 import sys
 from typing import List, Optional
-from urllib import request
 import dotenv
 import os
 from Blockchain import Blockchain, Transaction, Block
@@ -193,7 +192,7 @@ if __name__ == "__main__":
 
     if len(connected_nodes) <= nodes_ask_limit / 2:
         for node in connected_nodes:
-            response = request.get(f"http://{node}:{PORT}/nodes/")
+            response = requests.get(f"http://{node}:{PORT}/nodes/")
             data = response.json()
             for fetched_node in data:
                 if not fetched_node in recent_nodes:
