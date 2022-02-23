@@ -58,10 +58,7 @@ class Node():
                         f"http://{node}:{self.port}/blockchain")
 
                 data = response.json()
-                block = Block(data["index"], data["timestamp"],
-                              data["hardness"], data["prev_hash"], data["nonse"])
-                block.trasactions = data["transactions"]
-                received_blocks.append(block)
+                received_blocks.append(data)
             except requests.ConnectionError:
                 print(
                     f"Node {node}:{self.port} is not active and has been deleted")
