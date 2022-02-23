@@ -1,3 +1,4 @@
+import enum
 from Crypto.PublicKey.RSA import RsaKey
 from typing import List
 from fastapi import FastAPI, Request, Response, status
@@ -69,7 +70,12 @@ class Node():
         for received_block in received_blocks:
             if received_blocks.count(received_block) >= same_blocks:
                 accpeted_blocks = received_block
-
+        for index, block in enumerate(accpeted_blocks):
+            block_ = Block(block["index"], block["timestamp"],
+                           block["hardness"], block["prev_hash"], block["nonse"])
+            block_.trasactions = block["transactions"]
+            block_.hash = block_.generate_hash()
+            accpeted_blocks[index] = block_
         accpeted_blocks.sort(key=operator.attrgetter("index"))
 
         for block in accpeted_blocks:
