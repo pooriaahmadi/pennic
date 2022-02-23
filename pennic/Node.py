@@ -10,12 +10,7 @@ import multiprocessing
 import requests
 import operator
 import uvicorn
-import logging
 import sys
-
-# logging setup
-logging.basicConfig(filename="blockchain.log", level=logging.DEBUG,
-                    format=f"%(levelname)s %(threadName)s: %(message)s")
 
 
 class Node():
@@ -32,7 +27,7 @@ class Node():
             try:
                 requests.post(
                     f"http://{node}:{self.port}/broadcast/block", json=block.to_json())
-                logging.info(
+                print(
                     f"Block {block.index} has been broadcasted to {node}:{self.port}")
             except requests.ConnectionError:
                 self.nodes.remove(node)
@@ -42,7 +37,7 @@ class Node():
             try:
                 requests.post(
                     f"http://{node}:{self.port}/broadcast/transaction", json=transaction.to_json())
-                logging.info(
+                print(
                     f"Transaction {transaction.index} has been broadcasted to {node}:{self.port}")
             except requests.ConnectionError:
                 self.nodes.remove(node)
@@ -68,7 +63,7 @@ class Node():
                 block.trasactions = data["transactions"]
                 received_blocks.append(block)
             except requests.ConnectionError:
-                logging.warning(
+                print(
                     f"Node {node}:{self.port} is not active and has been deleted")
                 self.nodes.remove(node)
 
@@ -150,7 +145,7 @@ class Node():
     def setup(self):
         self.receive_blockchain()
         if not self.blockchain.validate_chain():
-            logging.critical("Chain is not valid")
+            print("Chain is not valid")
             sys.exit(0)
 
     def mine(self):
@@ -165,8 +160,7 @@ class Node():
         uvicorn.run(self.app, port=self.port, host='0.0.0.0')
 
     def run(self):
-        api_process = multiprocessing.Process(target=self.runapp)
-        api_process.start()
-
         mining_process = multiprocessing.Process(target=self.mine)
         mining_process.start()
+        api_process = multiprocessing.Process(target=self.runapp)
+        api_process.start()
