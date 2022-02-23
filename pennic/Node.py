@@ -2,10 +2,10 @@ from Crypto.PublicKey.RSA import RsaKey
 from typing import List
 from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from .body_types import Block as BlockBody, Transaction as TransactionBody
-from ..Blockchain import Blockchain
-from ..Blockchain import Block
-from ..Blockchain import Transaction
+from Networking.body_types import Block as BlockBody, Transaction as TransactionBody
+from Blockchain import Blockchain
+from Blockchain import Block
+from Blockchain import Transaction
 import multiprocessing
 import requests
 import operator
@@ -103,7 +103,7 @@ class Node():
         async def blockchain():
             return self.blockchain.to_json()
 
-        @self.get("/blockchain/{start_block}/{end_block}")
+        @self.app.get("/blockchain/{start_block}/{end_block}")
         async def from_to_somewhere_blockchain(start_block, end_block):
             start_block = int(start_block)
             end_block = int(end_block)
@@ -156,7 +156,6 @@ class Node():
     def mine(self):
         while True:
             block = self.blockchain.new_block()
-            print(block.hardness)
             block.calculate_correct_hash_multiprocess(
                 self.private_key, self.hashes_rate)
             self.broadcast_mined_block(block)
@@ -166,8 +165,8 @@ class Node():
         uvicorn.run(self.app, port=self.port, host='0.0.0.0')
 
     def run(self):
-        mining_process = multiprocessing.Process(target=self.mine)
         api_process = multiprocessing.Process(target=self.runapp)
+        api_process.start()
 
-        mining_process.run()
-        api_process.run()
+        mining_process = multiprocessing.Process(target=self.mine)
+        mining_process.start()

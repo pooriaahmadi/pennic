@@ -64,7 +64,6 @@ class Block():
         is_done = False
         start = 0
         end = hashes_per_cycle
-
         while not is_done:
             results = pool.map(self.pool_hashing, range(start, end))
             for result in results:
