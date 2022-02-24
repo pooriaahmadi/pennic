@@ -1,4 +1,3 @@
-import enum
 from Crypto.PublicKey.RSA import RsaKey
 from typing import List
 from fastapi import FastAPI, Request, Response, status
@@ -7,7 +6,6 @@ from Networking.body_types import Block as BlockBody, Transaction as Transaction
 from Blockchain import Blockchain
 from Blockchain import Block
 from Blockchain import Transaction
-import multiprocessing
 import requests
 import operator
 import uvicorn
@@ -151,19 +149,18 @@ class Node():
             print("Chain is not valid")
             sys.exit(0)
 
-    def mine(self):
-        while True:
-            block = self.blockchain.new_block()
-            block.calculate_correct_hash_multiprocess(
-                self.private_key, self.hashes_rate)
-            self.broadcast_mined_block(block)
-            self.blockchain.add_block(block)
+    # def mine(self):
+    #     while True:
+    #         block = self.blockchain.new_block()
+    #         block.calculate_correct_hash_multiprocess(
+    #             self.private_key, self.hashes_rate)
+    #         self.broadcast_mined_block(block)
+    #         self.blockchain.add_block(block)
 
     def runapp(self):
         uvicorn.run(self.app, port=self.port, host='0.0.0.0')
 
     def run(self):
-        mining_process = multiprocessing.Process(target=self.mine)
-        mining_process.start()
-        api_process = multiprocessing.Process(target=self.runapp)
-        api_process.start()
+        # mining_process = multiprocessing.Process(target=self.mine)
+        # mining_process.start()
+        pass

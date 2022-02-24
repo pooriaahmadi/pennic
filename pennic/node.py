@@ -1,4 +1,3 @@
-import multiprocessing
 from dotenv import load_dotenv
 from Node import Node
 from Crypto.PublicKey import RSA
@@ -32,7 +31,7 @@ chain.load_database()
 node = Node(hash_rate, private, chain, nodes, port)
 node.routes()
 node.setup()
-node.run()
+node.runapp()
 
 
 with open("recent_nodes.json", 'w') as nodes_file:
