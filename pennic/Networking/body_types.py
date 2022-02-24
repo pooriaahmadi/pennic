@@ -3,6 +3,7 @@ from typing import Optional, List
 
 
 class Transaction(BaseModel):
+    index: int
     sender: str
     receiver: str
     amount: float
@@ -12,7 +13,7 @@ class Transaction(BaseModel):
 
 
 class Block(BaseModel):
-    index: float
+    index: int
     timestamp: float
     hardness: int
     prev_hash: Optional[str] = None

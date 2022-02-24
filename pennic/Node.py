@@ -1,3 +1,4 @@
+from urllib import response
 from Crypto.PublicKey.RSA import RsaKey
 from typing import List
 from fastapi import FastAPI, Request, Response, status
@@ -130,7 +131,7 @@ class Node():
         @self.app.post("/broadcast/transaction")
         async def broadcast_transaction(transaction: TransactionBody, response: Response):
             transaction: Transaction = Transaction(
-                0, transaction.sender.encode("utf-8"), transaction.receiver.encode("utf-8"), transaction.amount, transaction.time, transaction.signature)
+                transaction.index, transaction.sender.encode("utf-8"), transaction.receiver.encode("utf-8"), transaction.amount, transaction.time, transaction.signature)
             transaction.hash = transaction.generate_hash()
             self.broadcast_transaction(transaction)
 
@@ -142,6 +143,29 @@ class Node():
                 return {"message": "transaction was invalid"}
             self.blockchain.add_pending_transaction(transaction)
             return {}
+
+        @self.app.post("/self/block")
+        async def self_block(mined_block: BlockBody, request: Request, response: Response):
+            if request.client.host != "127.0.0.1":
+                response.status_code = status.HTTP_403_FORBIDDEN
+                return {"message": "You are not me >;/"}
+
+            block = Block(mined_block.index, mined_block.timestamp,
+                          mined_block.hardness, mined_block.prev_hash, mined_block.nonse)
+            block.trasactions = mined_block.transactions
+            block.hash = block.generate_hash()
+            self.broadcast_mined_block(block)
+            return {"message": "broadcasted"}
+
+        @self.app.post("/self/transaction")
+        async def self_transaction(received_transaction: TransactionBody, request: Request, response: Response):
+            if request.client.host != "127.0.0.1":
+                response.status_code = status.HTTP_403_FORBIDDEN
+                return {"message": "You are not me >;/"}
+
+            transaction = Transaction(received_transaction.index, received_transaction.sender, received_transaction.receiver, received_transaction.amount, received_transaction.time, received_transaction.signature)
+            self.broadcast_transaction(transaction)
+            return {"message": "broadcasted"}
 
     def setup(self):
         self.receive_blockchain()
