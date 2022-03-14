@@ -24,7 +24,7 @@ class Node():
         for node in self.nodes:
             try:
                 requests.post(
-                    f"http://{node}/broadcast/block", json=block.to_json())
+                    f"http://{node}/broadcast/block", json=block.to_json(), headers={"port": str(self.port)})
                 print(
                     f"Block {block.index} has been broadcasted to {node}")
             except requests.ConnectionError:
@@ -34,7 +34,7 @@ class Node():
         for node in self.nodes:
             try:
                 requests.post(
-                    f"http://{node}/broadcast/transaction", json=transaction.to_json())
+                    f"http://{node}/broadcast/transaction", json=transaction.to_json(), headers={"port": str(self.port)})
                 print(
                     f"Transaction {transaction.index} has been broadcasted to {node}")
             except requests.ConnectionError:
@@ -82,9 +82,9 @@ class Node():
         @self.app.middleware("http")
         async def get_ip_address(request: Request, call_next):
             if not request.client.host in self.nodes:
-                self.nodes.append(
-                    Address(request.client.host, request.headers.get("port")))
-
+                if not request.client.host == "127.0.0.1" and request.header.get("port") == str(self.port):
+                    self.nodes.append(
+                        Address(request.client.host, request.headers.get("port")))
             response = await call_next(request)
             return response
 
@@ -151,6 +151,7 @@ class Node():
 
             block = Block(mined_block.index, mined_block.timestamp,
                           mined_block.hardness, mined_block.prev_hash, mined_block.nonse)
+
             block.trasactions = mined_block.transactions
             block.hash = block.generate_hash()
             self.broadcast_mined_block(block)
