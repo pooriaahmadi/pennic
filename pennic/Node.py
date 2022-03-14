@@ -122,11 +122,11 @@ class Node():
                                  block.hardness, block.prev_hash, block.nonse)
             block.trasactions = transaction
             block.hash = block.generate_hash()
-            self.broadcast_mined_block(block)
             if not block.is_valid():
                 response.status_code = status.HTTP_406_NOT_ACCEPTABLE
                 return {"message": "block was invalid"}
             self.blockchain.add_block(block)
+            self.broadcast_mined_block(block)
 
         @self.app.post("/broadcast/transaction")
         async def broadcast_transaction(transaction: TransactionBody, response: Response):
