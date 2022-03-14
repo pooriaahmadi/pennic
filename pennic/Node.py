@@ -4,9 +4,7 @@ from typing import List
 from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from Networking.body_types import Block as BlockBody, Transaction as TransactionBody
-from Blockchain import Blockchain
-from Blockchain import Block
-from Blockchain import Transaction
+from Blockchain import Blockchain, Block, Transaction, Address
 import requests
 import operator
 import uvicorn
@@ -14,7 +12,7 @@ import sys
 
 
 class Node():
-    def __init__(self, hashes_rate: int, private_key: RsaKey, blockchain: Blockchain, nodes: List[str], port: int) -> None:
+    def __init__(self, hashes_rate: int, private_key: RsaKey, blockchain: Blockchain, nodes: List[Address], port: int) -> None:
         self.hashes_rate = hashes_rate
         self.private_key = private_key
         self.blockchain = blockchain
@@ -26,9 +24,9 @@ class Node():
         for node in self.nodes:
             try:
                 requests.post(
-                    f"http://{node}:{self.port}/broadcast/block", json=block.to_json())
+                    f"http://{node}/broadcast/block", json=block.to_json())
                 print(
-                    f"Block {block.index} has been broadcasted to {node}:{self.port}")
+                    f"Block {block.index} has been broadcasted to {node}")
             except requests.ConnectionError:
                 self.nodes.remove(node)
 
@@ -36,9 +34,9 @@ class Node():
         for node in self.nodes:
             try:
                 requests.post(
-                    f"http://{node}:{self.port}/broadcast/transaction", json=transaction.to_json())
+                    f"http://{node}/broadcast/transaction", json=transaction.to_json())
                 print(
-                    f"Transaction {transaction.index} has been broadcasted to {node}:{self.port}")
+                    f"Transaction {transaction.index} has been broadcasted to {node}")
             except requests.ConnectionError:
                 self.nodes.remove(node)
 
@@ -52,16 +50,16 @@ class Node():
                 response: requests.Response = None
                 if blocks_length >= 0:
                     response = requests.get(
-                        f"http://{node}:{self.port}/blockchain/{blocks_length}")
+                        f"http://{node}/blockchain/{blocks_length}")
                 else:
                     response = requests.get(
-                        f"http://{node}:{self.port}/blockchain")
+                        f"http://{node}/blockchain")
 
                 data = response.json()
                 received_blocks.append(data)
             except requests.ConnectionError:
                 print(
-                    f"Node {node}:{self.port} is not active and has been deleted")
+                    f"Node {node} is not active and has been deleted")
                 self.nodes.remove(node)
 
         accpeted_blocks = []
@@ -84,7 +82,8 @@ class Node():
         @self.app.middleware("http")
         async def get_ip_address(request: Request, call_next):
             if not request.client.host in self.nodes:
-                self.nodes.append(request.client.host)
+                self.nodes.append(
+                    Address(request.client.host, request.headers.get("port")))
 
             response = await call_next(request)
             return response
@@ -113,7 +112,7 @@ class Node():
 
         @self.app.get("/nodes/")
         async def nodes():
-            return self.nodes
+            return list(map(lambda x: x.to_json(), self.nodes))
 
         @self.app.post("/broadcast/block")
         async def broadcast_mined_block(block: BlockBody, response: Response):
@@ -163,7 +162,8 @@ class Node():
                 response.status_code = status.HTTP_403_FORBIDDEN
                 return {"message": "You are not me >;/"}
 
-            transaction = Transaction(received_transaction.index, received_transaction.sender, received_transaction.receiver, received_transaction.amount, received_transaction.time, received_transaction.signature)
+            transaction = Transaction(received_transaction.index, received_transaction.sender, received_transaction.receiver,
+                                      received_transaction.amount, received_transaction.time, received_transaction.signature)
             self.broadcast_transaction(transaction)
             return {"message": "broadcasted"}
 

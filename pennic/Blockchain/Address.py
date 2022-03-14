@@ -3,5 +3,11 @@ class Address():
         self.ip = ip
         self.port = port or 34756
 
+    def to_json(self):
+        return {
+            "ip": self.ip,
+            "port": self.port
+        }
+
     def __str__(self) -> str:
         return f"{self.ip}:{self.port}"
