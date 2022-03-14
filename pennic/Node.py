@@ -125,8 +125,12 @@ class Node():
             if not block.is_valid():
                 response.status_code = status.HTTP_406_NOT_ACCEPTABLE
                 return {"message": "block was invalid"}
-            self.blockchain.add_block(block)
-            self.broadcast_mined_block(block)
+            try:
+                self.blockchain.add_block(block)
+                self.broadcast_mined_block(block)
+            except:
+                response.status_code = status.HTTP_406_NOT_ACCEPTABLE
+                return {"message": "requested block does not fit the blockchain"}
 
         @self.app.post("/broadcast/transaction")
         async def broadcast_transaction(transaction: TransactionBody, response: Response):
