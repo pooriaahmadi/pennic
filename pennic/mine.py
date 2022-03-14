@@ -29,4 +29,5 @@ while True:
         "transactions": block.trasactions,
         "nonse": block.nonse,
         "hash": block.hash
-    })
+    }, headers={"port": str(port)})
+    print(f"MINED: {block}")
