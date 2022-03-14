@@ -19,8 +19,9 @@ chain = Blockchain()
 chain.load_database()
 
 while True:
+    block = chain.new_block()
     block = chain.calculate_correct_hash_multiprocess(
-        chain.new_block(), private, hash_rate)
+        block, private, hash_rate)
     requests.post(f"http://localhost:{port}/self/block", json={
         "index": block.index,
         "timestamp": block.timestamp,

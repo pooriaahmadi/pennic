@@ -150,7 +150,7 @@ class Blockchain():
 
     def new_block(self):
         hardness = self.calculate_hardness()
-        block = Block(len(self.blocks), time.time(),
+        block = Block(0 if not len(self.blocks) else self.blocks[-1].index + 1, time.time(),
                       hardness, None if len(self.blocks) == 0 else self.blocks[-1].hash)
         for transaction in self.pending_transactions:
             block.add_existing_transaction(Transaction(transaction["index"], transaction["sender"].encode(

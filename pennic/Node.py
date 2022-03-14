@@ -77,6 +77,7 @@ class Node():
 
         for block in accpeted_blocks:
             self.blockchain.add_block(block)
+            print(f"Block #{block.index} added")
 
     def routes(self):
         @self.app.middleware("http")
