@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 from Crypto.PublicKey import RSA
-from Blockchain import Blockchain
+from Blockchain import Blockchain, Block
 import os
 import requests
 
@@ -15,13 +15,21 @@ with open("private.pem", "rb") as private_file:
     private = RSA.import_key(private_file.read())
 
 
-chain = Blockchain()
-chain.load_database()
+def new_block():
+    block = requests.get(f"http://localhost:{port}/blockchain/new").json()
+    transactions = block["transactions"]
+    block = Block(block["index"], block["timestamp"],
+                  block["hardness"], block["prev_hash"], block["nonse"])
+    block.trasactions = transactions
+    block.hash = block.generate_hash()
+    return block
+
 
 while True:
-    block = chain.new_block()
-    block = chain.calculate_correct_hash_multiprocess(
-        block, private, hash_rate)
+    block = new_block()
+    block = block.calculate_correct_hash_multiprocess(private, hash_rate, port)
+    if not block:
+        continue
     response = requests.post(f"http://localhost:{port}/self/block", json={
         "index": block.index,
         "timestamp": block.timestamp,
@@ -33,5 +41,4 @@ while True:
     }, headers={"port": str(port)})
     if response.status_code == 406:
         continue
-    chain.add_block(block)
     print(f"MINED: {block}")

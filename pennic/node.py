@@ -128,6 +128,11 @@ async def blockchain():
     return chain.to_json()
 
 
+@app.get("/blockchain/new")
+async def new_block():
+    return chain.new_block().to_json()
+
+
 @app.get("/blockchain/last")
 async def last_block():
     return chain.blocks[-1].to_json()

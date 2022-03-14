@@ -4,6 +4,7 @@ import multiprocessing
 from .Transaction import Transaction
 import time
 import json
+import requests
 
 
 class Block():
@@ -57,15 +58,24 @@ class Block():
     def override_hash(self, value):
         self.__hash = value
 
-    def calculate_correct_hash_multiprocess(self, miner_private_key, hashes_per_cycle) -> Block:
+    def check_updated(self, port):
+        last_block = requests.get(
+            f"http://localhost:{port}/blockchain/last").json()
+        return last_block["index"] >= self.index
+
+    def calculate_correct_hash_multiprocess(self, miner_private_key, hashes_per_cycle, port) -> Block:
         self.add_transaction(len(self.trasactions), "network".encode("utf-8"), miner_private_key.public_key(
         ).export_key(), 10, time.time(), miner_private_key)
         pool = multiprocessing.Pool(multiprocessing.cpu_count())
         is_done = False
         start = 0
         end = hashes_per_cycle
+
         while not is_done:
             results = pool.map(self.pool_hashing, range(start, end))
+            if self.check_updated():
+                return None
+
             for result in results:
                 if result == None:
                     continue
