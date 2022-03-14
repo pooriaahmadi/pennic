@@ -159,6 +159,18 @@ class Blockchain():
         block.hash = block.generate_hash()
         return block
 
+    def check_updated(self):
+        last_block = self.blocks[-1]
+        self.database.close()
+        self.database.setup()
+        self.load_database
+        self.database.execute(
+            "SELECT * FROM blocks ORDER BY id DESC LIMIT 1;")
+        block = self.database.fetchall()
+        if not len(block):
+            return False
+        return block[0][0] != last_block.index
+
     def calculate_correct_hash_multiprocess(self, block: Block, miner_private_key, hashes_per_cycle):
         blocks_length = len(self.blocks)
         block.add_transaction(len(block.trasactions), "network".encode("utf-8"), miner_private_key.public_key(
@@ -170,6 +182,13 @@ class Blockchain():
 
         while not is_done:
             results = pool.map(block.pool_hashing, range(start, end))
+            if self.check_updated():
+                block = self.new_block()
+                start = 0
+                end = hashes_per_cycle
+                is_done = False
+                continue
+
             if blocks_length != len(self.blocks):
                 is_done = True
             for result in results:
@@ -183,8 +202,6 @@ class Blockchain():
             start = end
             end += hashes_per_cycle
         block.tmp = []
-        requests.post(f"http://localhost:34756/self/block",
-                      json=block.to_json())
         return block
 
     def add_block(self, block: Block):
