@@ -159,7 +159,22 @@ class Blockchain():
         block.hash = block.generate_hash()
         return block
 
+    def does_fit_in_chain(self, block):
+        if len(self.blocks) and not block.prev_hash:
+            return False
+        if len(self.blocks):
+            previous_block: Block = self.blocks[-1]
+            if previous_block.hash != block.prev_hash:
+                return False
+            hash = hashlib.sha256(
+                block.generate_hash().encode('utf-8')).hexdigest()
+            if not hash.startswith('0'*block.hardness) or not (previous_block.index + 1) == block.index:
+                return False
+        return True
+
     def check_updated(self):
+        if not len(self.blocks):
+            return False
         last_block = self.blocks[-1]
         self.database.close()
         self.database.setup()
@@ -197,7 +212,6 @@ class Blockchain():
                 block.override_hash(result[0])
                 block.nonse = result[1]
                 is_done = True
-                self.add_block(block)
                 break
             start = end
             end += hashes_per_cycle

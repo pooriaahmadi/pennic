@@ -22,7 +22,7 @@ while True:
     block = chain.new_block()
     block = chain.calculate_correct_hash_multiprocess(
         block, private, hash_rate)
-    requests.post(f"http://localhost:{port}/self/block", json={
+    response = requests.post(f"http://localhost:{port}/self/block", json={
         "index": block.index,
         "timestamp": block.timestamp,
         "hardness": block.hardness,
@@ -31,4 +31,7 @@ while True:
         "nonse": block.nonse,
         "hash": block.hash
     }, headers={"port": str(port)})
+    if response.status_code == 406:
+        continue
+    chain.add_block(block)
     print(f"MINED: {block}")
