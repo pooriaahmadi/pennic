@@ -50,10 +50,10 @@ class Node():
                 response: requests.Response = None
                 if blocks_length >= 0:
                     response = requests.get(
-                        f"http://{node}/blockchain/{blocks_length}")
+                        f"http://{node}/blockchain/{blocks_length}", headers={"port": str(self.port)})
                 else:
                     response = requests.get(
-                        f"http://{node}/blockchain")
+                        f"http://{node}/blockchain", headers={"port": str(self.port)})
 
                 data = response.json()
                 received_blocks.append(data)
@@ -81,10 +81,11 @@ class Node():
     def routes(self):
         @self.app.middleware("http")
         async def get_ip_address(request: Request, call_next):
-            if not request.client.host in self.nodes:
-                if not request.client.host == "127.0.0.1" and request.header.get("port") == str(self.port):
+            port = request.headers.get("port")
+            if not Address(request.client.host, port) in self.nodes:
+                if Address(request.client.host, port).__str__() != f"localhost:{self.port}":
                     self.nodes.append(
-                        Address(request.client.host, request.headers.get("port")))
+                        Address(request.client.host, int(port)))
             response = await call_next(request)
             return response
 

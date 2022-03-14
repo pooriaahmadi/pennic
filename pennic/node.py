@@ -20,9 +20,10 @@ nodes: List[Address] = []
 try:
     with open("recent_nodes.json", "r", encoding="utf-8") as nodes_file:
         raw_nodes = json.loads(nodes_file.read())
-        for node in raw_nodes:
-            nodes.append(Address(node["ip"], node["port"]))
 
+        for node in raw_nodes:
+            node = node.split(":")
+            nodes.append(Address(node[0], node[1]))
         if not len(nodes):
             input_node = input("Please enter a node to start")
             if input_node:
