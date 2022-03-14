@@ -28,9 +28,9 @@ try:
             if input_node:
                 nodes.append(Address(input_node))
 except:
-    input_node = input("Please enter a node to start")
+    input_node = input("Please enter a node to start").split(":")
     if input_node:
-        nodes.append(Address(input_node))
+        nodes.append(Address(input_node[0], input_node[1]))
 
 chain = Blockchain()
 chain.load_database()
@@ -42,4 +42,4 @@ node.runapp()
 
 
 with open("recent_nodes.json", 'w') as nodes_file:
-    nodes_file.write(json.dumps(node.nodes))
+    nodes_file.write(json.dumps(list(map(lambda x: x.__str__(), node.nodes))))
