@@ -25,7 +25,7 @@ Linux/POSIX in mind._
 $ python3 install pipenv
 $ pipenv install
 $ pipenv scripts
-$ pipenv run generate_keys
+$ pipenv run generatekeys
 # This will create your private and public key
 $ pipenv run setup_database
 # This will create the blockchain database on your pc
