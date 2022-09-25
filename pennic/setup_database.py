@@ -1,7 +1,7 @@
 
 from Blockchain import Blockchain
 
-chain = Blockchain()
+chain = Blockchain(os.getenv("BLOCKCHAIN_DATABASE_PATH"))
 
 chain.install_database()
 print(f"""
