@@ -1,7 +1,10 @@
 
 from Blockchain import Blockchain
+import os
+import dotenv
+dotenv.load_dotenv()
 
-chain = Blockchain()
+chain = Blockchain(os.getenv("BLOCKCHAIN_DATABASE_PATH"))
 
 chain.install_database()
 print(f"""
